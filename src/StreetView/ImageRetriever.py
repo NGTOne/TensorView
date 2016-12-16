@@ -5,7 +5,8 @@ import math
 from exception import AddressNotFoundException, MetaDataRetrievalException
 
 class ImageRetriever:
-    META_URL = 'https://maps.googleapis.com/maps/api/streetview/metadata?'
+    API_URL = 'https://maps.googleapis.com/maps/api/streetview'
+    META_URL = API_URL + '/metadata'
     META_STATUS = {
         'OK': 'OK',
         'ZERO': 'ZERO_RESULTS',
@@ -48,7 +49,7 @@ class ImageRetriever:
 
     def image_meta(self, location):
         params = urllib.urlencode({'key': self.apiKey, 'location': location})
-        url = self.META_URL + params
+        url = self.META_URL + '?' + params
 
         response = urllib.urlopen(url)
         meta = json.loads(response.read())
@@ -68,7 +69,24 @@ class ImageRetriever:
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
+
+        cached = self.get_cached_image(panID)
+
+        if (cached):
+            return cached
+
+        urlParams = {'pano': panID, 'fov': self.fov,
+                     'size': self.size['x'] + 'x' + self.size['y'],
+                     'key': self.apiKey}
         headings = self.calculate_headings(forwardHeading)
+
+        for heading in headings:
+            urlParams['heading'] = heading
+            url = self.API_URL + '?' + urllib.urlencode(urlParams)
+
+    def get_cached_image(self, panID):
+        # TODO: Implement image caching
+        return None
 
     def calculate_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
