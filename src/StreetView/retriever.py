@@ -98,8 +98,7 @@ class ImageRetriever:
             # Instead of having one big overrun on the final image of the
             # panorama, we're going to distribute it between all of them
             numIncrements = math.ceil(360.0/self.fov)
-            diff = numIncrements * self.fov - 360
-            actualIncrement = self.fov - diff
+            actualIncrement = 360.0/numIncrements
 
         for i in range(0, numIncrements + 1):
             headings.append(forwardHeading + i * actualIncrement)
