@@ -1,5 +1,6 @@
 import urllib
 import json
+import math
 
 from exception import AddressNotFoundException, MetaDataRetrievalException
 
@@ -67,4 +68,22 @@ class ImageRetriever:
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
+        headings = self.calculate_headings(forwardHeading)
 
+    def calculate_headings(self, forwardHeading):
+        # The Street View API views heading as 0 = due north = 360
+        headings = []
+        if (360 % self.fov == 0):
+            actualIncrement = self.fov
+            numIncrements = 360/self.fov
+        else:
+            # Instead of having one big overrun on the final image of the
+            # panorama, we're going to distribute it between all of them
+            numIncrements = math.ceil(360.0/self.fov)
+            diff = numIncrements * self.fov - 360
+            actualIncrement = self.fov - diff
+
+        for i in range(0, numIncrements + 1):
+            headings.append(forwardHeading + i * actualIncrement)
+
+        return headings
