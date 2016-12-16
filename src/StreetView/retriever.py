@@ -1,8 +1,10 @@
 import urllib
 import json
 import math
+import os
 
 from exception import AddressNotFoundException, MetaDataRetrievalException
+from panorama import Panorama
 
 class ImageRetriever:
     API_URL = 'https://maps.googleapis.com/maps/api/streetview'
@@ -47,6 +49,8 @@ class ImageRetriever:
                 # Nothing here, let's move on to the next one
                 continue
 
+        return images
+
     def image_meta(self, location):
         params = urllib.urlencode({'key': self.apiKey, 'location': location})
         url = self.META_URL + '?' + params
@@ -76,13 +80,25 @@ class ImageRetriever:
             return cached
 
         urlParams = {'pano': panID, 'fov': self.fov,
-                     'size': self.size['x'] + 'x' + self.size['y'],
+                     'size': str(self.size['x']) + 'x' + str(self.size['y']),
                      'key': self.apiKey}
         headings = self.calculate_headings(forwardHeading)
+        imgDir = os.path.join(self.targetDir, panID)
 
+        return self.get_panorama(urlParams, headings, panID, imgDir)
+
+    def get_panorama(self, params, headings, panID, imgDir):
+        pano = Panorama(panID, imgDir)
+
+         # TODO: Better error handling here
         for heading in headings:
-            urlParams['heading'] = heading
-            url = self.API_URL + '?' + urllib.urlencode(urlParams)
+            params['heading'] = heading
+            url = self.API_URL + '?' + urllib.urlencode(params)
+            filename = os.path.join(imgDir, str(heading) + '.jpg')
+            urllib.urlretrieve(url, filename)
+            pano.addImage(filename)
+
+        return pano
 
     def get_cached_image(self, panID):
         # TODO: Implement image caching
@@ -100,7 +116,7 @@ class ImageRetriever:
             numIncrements = math.ceil(360.0/self.fov)
             actualIncrement = 360.0/numIncrements
 
-        for i in range(0, numIncrements + 1):
+        for i in range(0, numIncrements):
             headings.append(forwardHeading + i * actualIncrement)
 
         return headings
