@@ -17,9 +17,14 @@ class ImageRetriever:
 
     # Specified by Google
     MAX_FOV = 120
+    DEFAULT_FOV = 90
 
-    def __init__(self, targetDir, apiKey, size = {'x': 1200, 'y': 1200},
-                 fov = MAX_FOV):
+    # Specified by Google; if the request specifies more it'll just go to this
+    # silently
+    MAX_SIZE = 640
+
+    def __init__(self, targetDir, apiKey, fov = DEFAULT_FOV,
+                 size = {'x': MAX_SIZE, 'y': MAX_SIZE}):
         self.targetDir = targetDir
         self.apiKey = apiKey
         self.size = size
