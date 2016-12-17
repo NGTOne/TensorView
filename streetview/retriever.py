@@ -101,22 +101,27 @@ class ImageRetriever:
         return pano
 
     def get_cached_image(self, panID):
-        # TODO: Implement image caching
+        expectedNumImages = self.numImages()
+        cachedPano = Panorama(panID, os.path.join(self.targetDir, panID))
+
+        if (cachedPano.fileCount() == expectedNumImages):
+            return cachedPano
+        cachedPano.clearCache()
         return None
+
+    def numImages(self):
+        if (360 % self.fov == 0):
+            return 360/self.fov
+        else:
+            return math.ceil(360.0/self.fov)
 
     def calculate_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
         headings = []
-        if (360 % self.fov == 0):
-            actualIncrement = self.fov
-            numIncrements = 360/self.fov
-        else:
-            # Instead of having one big overrun on the final image of the
-            # panorama, we're going to distribute it between all of them
-            numIncrements = math.ceil(360.0/self.fov)
-            actualIncrement = 360.0/numIncrements
+        numIncrements = self.numImages()
+        increment = 360.0/numIncrements
 
         for i in range(0, numIncrements):
-            headings.append(forwardHeading + i * actualIncrement)
+            headings.append(forwardHeading + i * increment)
 
         return headings
