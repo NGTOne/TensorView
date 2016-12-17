@@ -23,9 +23,13 @@ class Panorama:
     def fileCount(self):
         return len(self.files)
 
-    def clearCache(self):
+    def clearCache(self, headings):
         # We don't want to delete the directory because we'll likely be writing
         # to it again soon anyways
+        # Likewise, we won't delete headings we're interested in
+        images = [str(heading) + '.jpg' for heading in headings]
+
         for f in self.files:
-            os.remove(os.path.join(self.imgDir, f))
-        self.files = []
+            if (f not in images):
+                os.remove(os.path.join(self.imgDir, f))
+        self.files = [f for f in self.files if f in images]

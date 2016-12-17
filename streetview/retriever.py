@@ -73,47 +73,42 @@ class ImageRetriever:
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
+        headings = self.calculate_headings(forwardHeading)
 
-        cached = self.get_cached_image(panID)
-
-        if (cached):
-            return cached
-
+        cached = self.get_cached_image(panID, headings)
         urlParams = {'pano': panID, 'fov': self.fov,
                      'size': str(self.size['x']) + 'x' + str(self.size['y']),
                      'key': self.apiKey}
-        headings = self.calculate_headings(forwardHeading)
         imgDir = os.path.join(self.targetDir, panID)
 
-        return self.get_panorama(urlParams, headings, panID, imgDir)
+        return self.get_panorama(cached, urlParams, headings, panID, imgDir)
 
-    def get_panorama(self, params, headings, panID, imgDir):
-        pano = Panorama(panID, imgDir)
+    def get_panorama(self, cached, params, headings, panID, imgDir):
+        cachedFiles = cached.files
 
          # TODO: Better error handling here
         for heading in headings:
-            params['heading'] = heading
-            url = self.API_URL + '?' + urllib.urlencode(params)
-            filename = os.path.join(imgDir, str(heading) + '.jpg')
-            urllib.urlretrieve(url, filename)
-            pano.addImage(filename)
+            filename = str(heading) + '.jpg'
+            if (filename not in cachedFiles):
+                params['heading'] = heading
+                url = self.API_URL + '?' + urllib.urlencode(params)
+                filename = os.path.join(imgDir, filename)
+                urllib.urlretrieve(url, filename)
+                cached.addImage(filename)
 
-        return pano
+        return cached
 
-    def get_cached_image(self, panID):
+    def get_cached_image(self, panID, headings):
         expectedNumImages = self.numImages()
         cachedPano = Panorama(panID, os.path.join(self.targetDir, panID))
 
-        if (cachedPano.fileCount() == expectedNumImages):
-            return cachedPano
-        cachedPano.clearCache()
-        return None
+        cachedPano.clearCache(headings)
+        return cachedPano
 
     def numImages(self):
         if (360 % self.fov == 0):
             return 360/self.fov
-        else:
-            return math.ceil(360.0/self.fov)
+        return math.ceil(360.0/self.fov)
 
     def calculate_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
