@@ -73,13 +73,13 @@ class ImageRetriever:
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
-        headings = self.calculate_headings(forwardHeading)
 
-        cached = self.get_cached_image(panID, headings)
         urlParams = {'pano': panID, 'fov': self.fov,
                      'size': str(self.size['x']) + 'x' + str(self.size['y']),
                      'key': self.apiKey}
         imgDir = os.path.join(self.targetDir, panID)
+        headings = self.calculate_headings(forwardHeading)
+        cached = self.get_cached_image(panID, headings)
 
         return self.get_panorama(cached, urlParams, headings, panID, imgDir)
 
