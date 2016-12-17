@@ -28,4 +28,4 @@ class Panorama:
         # to it again soon anyways
         for f in self.files:
             os.remove(os.path.join(self.imgDir, f))
-            self.files.remove(f)
+        self.files = []
