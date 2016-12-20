@@ -52,7 +52,11 @@ class ImageRetriever:
         return images
 
     def image_meta(self, location):
-        params = urllib.urlencode({'key': self.apiKey, 'location': location})
+        params = urllib.urlencode(
+            {'key': self.apiKey,
+             'location': location if isinstance(location, basestring)
+                                  else ','.join(map(str, location))
+            })
         url = self.META_URL + '?' + params
 
         response = urllib.urlopen(url)
