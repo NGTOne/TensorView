@@ -1,0 +1,2 @@
+class MissingReferenceException(Exception):
+    pass
