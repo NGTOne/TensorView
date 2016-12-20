@@ -2,3 +2,9 @@
 *.pyc
 *.jpg
 *.jpeg
+
+# Shapefile stuff
+*.shp
+*.shx
+*.dbf
+*.prj
