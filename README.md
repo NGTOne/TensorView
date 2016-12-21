@@ -8,3 +8,7 @@ A generic system for bulk-analyzing Google Street View imagery using TensorFlow.
 - PyProj 1.9.5.1
 - haversine 0.45
 - a Google API key
+
+Also, make sure to have the following Google APIs enabled in the console:
+- Street View Image API
+- Maps Roads API
