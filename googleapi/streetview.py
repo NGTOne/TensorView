@@ -5,6 +5,7 @@ import os
 
 from exception import AddressNotFoundException, MetaDataRetrievalException
 from panorama import Panorama
+from maps import BearingEstimator
 
 class ImageRetriever:
     API_URL = 'https://maps.googleapis.com/maps/api/streetview'
@@ -40,6 +41,9 @@ class ImageRetriever:
 
     def retrieve_images(self, locations = []):
         images = []
+        locations = self.get_forward_headings(locations)
+
+        print locations
 
         # TODO: Parallelize this bit
         for loc in locations:
@@ -80,7 +84,7 @@ class ImageRetriever:
                      'size': str(self.size['x']) + 'x' + str(self.size['y']),
                      'key': self.apiKey}
         imgDir = os.path.join(self.targetDir, panID)
-        headings = self.calculate_headings(forwardHeading)
+        headings = self.calculate_pano_headings(forwardHeading)
         cached = self.get_cached_image(panID, headings)
 
         return self.get_panorama(cached, urlParams, headings, panID, imgDir)
@@ -112,16 +116,19 @@ class ImageRetriever:
             return 360/self.fov
         return math.ceil(360.0/self.fov)
 
-    def calculate_headings(self, forwardHeading):
+    def calculate_pano_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
-        headings = []
         numIncrements = self.numImages()
         increment = 360.0/numIncrements
 
-        for i in range(0, numIncrements):
-            headings.append(forwardHeading + i * increment)
+        return [forwardHeading + (i * increment)
+                    for i in range(0, numIncrements)]
 
-        return headings
+    def get_forward_headings(self, locations):
+        estimator = BearingEstimator(self.apiKey)
+        return [{'coords': loc['coords'],
+                 'forward_heading': estimator.check_bearing(loc['coords'])}
+               for loc in locations]
 
     def string_location(self, location):
         return location if isinstance(location, basestring) \

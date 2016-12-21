@@ -28,7 +28,6 @@ class PointSet:
             {'coords': pyproj.transform(inputProj, self.WGS84,
                                         point['geometry']['coordinates'][0],
                                         point['geometry']['coordinates'][1])
-                       [::-1], # Reverse it because pyproj returns (long, lat)
-             'forward_heading': 0} # TODO: Grab this if it exists
+                       [::-1]} # Reverse it because pyproj returns (long, lat)
         for point in contents]
         return self
