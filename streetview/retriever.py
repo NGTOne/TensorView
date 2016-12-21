@@ -41,6 +41,7 @@ class ImageRetriever:
     def retrieve_images(self, locations = []):
         images = []
 
+        # TODO: Parallelize this bit
         for loc in locations:
             try:
                 meta = self.image_meta(loc['coords']);
