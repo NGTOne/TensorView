@@ -17,7 +17,7 @@ class Panorama:
     def findFiles(self):
         return [f for f in os.listdir(self.imgDir)
                 if (os.path.isfile(os.path.join(self.imgDir, f))
-                    and re.match('^\d+\.\d+\.jpg$', f, re.IGNORECASE))]
+                    and re.match('^-?\d+\.\d+\.jpg$', f, re.IGNORECASE))]
                     # Regex only matches files that are named after headings
 
     def addImage(self, filename):
