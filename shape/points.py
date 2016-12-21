@@ -1,5 +1,6 @@
 import fiona
 import pyproj
+from fiona.crs import from_epsg, to_string
 
 from exception import MissingReferenceException
 
@@ -15,12 +16,11 @@ class PointSet:
         if not contents.crs:
             raise MissingReferenceException('Provided shapefile has no '
                                             'reference data.')
-        return self.convert_to_WGS84(contents,
-                                     fiona.crs.to_string(contents.crs))
+        return self.convert_to_WGS84(contents, to_string(contents.crs))
 
     def retrieve_from_unreferenced_shapefile(self, shapefile, epsg):
         return self.convert_to_WGS84(fiona.open(shapefile, 'r'),
-                                     '+init=EPSG:' + str(epsg))
+                                     to_string(from_epsg(epsg)))
 
     def convert_to_WGS84(self, contents, proj4String):
         inputProj = pyproj.Proj(proj4String)
