@@ -1,25 +1,11 @@
-import urllib
-import json
 import math
 import os
 
-from exception import AddressNotFoundException, MetaDataRetrievalException
 from panorama import Panorama
-from maps import BearingEstimator
+from roads import BearingEstimator
+from adapter import GoogleAdapter
 
 class ImageRetriever:
-    API_URL = 'https://maps.googleapis.com/maps/api/streetview'
-    META_URL = API_URL + '/metadata'
-    META_STATUS = {
-        'OK': 'OK',
-        'ZERO': 'ZERO_RESULTS',
-        'NOT_FOUND': 'NOT_FOUND',
-        'OVER_LIMIT': 'OVER_QUERY_LIMIT',
-        'DENIED': 'REQUEST_DENIED',
-        'INVALID': 'INVALID_REQUEST',
-        'UNKNOWN': 'UNKNOWN_ERROR'
-    }
-
     # Specified by Google
     MAX_FOV = 120
     DEFAULT_FOV = 90
@@ -31,6 +17,7 @@ class ImageRetriever:
     def __init__(self, targetDir, apiKey, fov = DEFAULT_FOV,
                  size = {'x': MAX_SIZE, 'y': MAX_SIZE}):
         self.targetDir = targetDir
+        self.adapter = GoogleAdapter(apiKey)
         self.apiKey = apiKey
         self.size = size
         if (fov > self.MAX_FOV):
@@ -54,52 +41,31 @@ class ImageRetriever:
 
         return images
 
-    def image_meta(self, location):
-        location = self.string_location(location)
-        params = urllib.urlencode({'key': self.apiKey, 'location': location})
-        url = self.META_URL + '?' + params
-
-        response = urllib.urlopen(url)
-        meta = json.loads(response.read())
-
-        if (meta['status'] == self.META_STATUS['OK']):
-            return meta
-        elif (meta['status'] == self.META_STATUS['ZERO']
-              or meta.status == self.META_STATUS['NOT_FOUND']):
-            # Since we're only expecting lat/long pairs and not
-            # street addresses, these status values basically
-            # mean the same thing
-            raise AddressNotFoundException('No imagery available for '
-                + location)
-        else:
-            raise MetaDataRetrievalException('An error occurred retrieving '
-                'address metadata. The error was: ' + meta['status'])
+    def image_meta(self, coords):
+        return self.adapter.street_view_image_meta(coords)
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
 
-        urlParams = {'pano': panID, 'fov': self.fov,
-                     'size': str(self.size['x']) + 'x' + str(self.size['y']),
-                     'key': self.apiKey}
         imgDir = os.path.join(self.targetDir, panID)
         headings = self.calculate_pano_headings(forwardHeading)
         cached = self.get_cached_image(panID, headings)
         cached.set_coords(str(meta['location']['lat']) + ',' +
                           str(meta['location']['lng']))
 
-        return self.get_panorama(cached, urlParams, headings, panID, imgDir)
+        return self.get_panorama(cached, headings, panID, imgDir)
 
-    def get_panorama(self, cached, params, headings, panID, imgDir):
+    def get_panorama(self, cached, headings, panID, imgDir):
         cachedFiles = cached.files
 
         # TODO: Better error handling here
         for heading in headings:
             filename = str(heading) + '.jpg'
             if (filename not in cachedFiles):
-                params['heading'] = heading
-                url = self.API_URL + '?' + urllib.urlencode(params)
                 filename = os.path.join(imgDir, filename)
-                urllib.urlretrieve(url, filename)
+                self.adapter.street_view_image(panID, self.fov,
+                                               self.size['x'], self.size['y'],
+                                               heading, filename)
                 cached.add_image(filename)
 
         return cached
