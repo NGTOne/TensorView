@@ -29,6 +29,12 @@ class Panorama:
     def file_count(self):
         return len(self.files)
 
+    def headings(self):
+        return [image.replace('.jpg', '') for image in self.files]
+
+    def full_filenames(self):
+        return [os.path.join(self.imgDir, image) for image in self.files]
+
     def clear_cache(self, headings):
         # We don't want to delete the directory because we'll likely be writing
         # to it again soon anyways
