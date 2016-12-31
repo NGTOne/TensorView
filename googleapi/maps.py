@@ -1,38 +1,35 @@
-import urllib
-import json
 from math import sin, cos, radians, degrees, atan2
 
 from haversine import haversine
+from adapter import GoogleAdapter
 
 # I HOPE HOPE HOPE this class can go away at some point
 # All it does is make network calls to blindly guess which way a street is
 # going
 class BearingEstimator:
-    NEAREST_ROAD_URL = 'https://roads.googleapis.com/v1/nearestRoads'
-
     # Some magic numbers here; chosen by trial and error
     DEFAULT_NUM_TESTS = 20
     DEFAULT_TEST_DISTANCE = 3
 
     def __init__(self, apiKey, numTests = DEFAULT_NUM_TESTS,
                  testDistance = DEFAULT_TEST_DISTANCE):
-        self.apiKey = apiKey
+        self.adapter = GoogleAdapter(apiKey)
         self.numTests = numTests
         self.testDistance = testDistance
 
     def check_bearing(self, coords):
         # We're interested in co-ordinates along the nearest road
         nearestRoad = self.nearest_road([coords])
-        placeID = nearestRoad['snappedPoints'][0]['placeId']
-        roadCoords = (nearestRoad['snappedPoints'][0]['location']['latitude'],
-                      nearestRoad['snappedPoints'][0]['location']['longitude'])
+        placeID = nearestRoad[0]['placeId']
+        roadCoords = (nearestRoad[0]['location']['latitude'],
+                      nearestRoad[0]['location']['longitude'])
 
         testCoords = self.calculate_test_coords(roadCoords)
         testRoads = self.nearest_road(testCoords)
         # Different placeID means we're on a different part of the road
         # polyline, potentially with a different bearing, or on a different
         # road altogether
-        testRoads = self.filter_roads(testRoads['snappedPoints'], placeID)
+        testRoads = self.filter_roads(testRoads, placeID)
 
         # If there's no matching roads (it can happen, especially at large
         # intersections), there's no real way to determine the bearing
@@ -60,11 +57,7 @@ class BearingEstimator:
                 
 
     def nearest_road(self, coord_set):
-        string_coord_set = [self.string_coords(coord) for coord in coord_set]
-        params = {'key': self.apiKey, 'points': '|'.join(string_coord_set)}
-        url = self.NEAREST_ROAD_URL + '?' + urllib.urlencode(params)
-        response = urllib.urlopen(url)
-        return json.loads(response.read())
+        return self.adapter.nearest_roads(coord_set)
 
     # Since the distances involved are so small, we can just use standard
     # trig formulae here and not worry about the geosphere
