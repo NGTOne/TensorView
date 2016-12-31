@@ -93,7 +93,3 @@ class ImageRetriever:
         return [{'coords': loc['coords'],
                  'forward_heading': estimator.check_bearing(loc['coords'])}
                for loc in locations]
-
-    def string_location(self, location):
-        return location if isinstance(location, basestring) \
-                        else ','.join(map(str, location))

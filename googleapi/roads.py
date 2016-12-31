@@ -91,7 +91,3 @@ class BearingEstimator:
                              cos(first[0]) * sin(second[0]) -
                                  sin(first[0]) * cos(second[0]) *
                                  cos(deltaLong)))
-
-    def string_coords(self, coords):
-        return coords if isinstance(coords, basestring) \
-                      else ','.join(map(str, coords))
