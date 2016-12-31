@@ -43,8 +43,6 @@ class ImageRetriever:
         images = []
         locations = self.get_forward_headings(locations)
 
-        print locations
-
         # TODO: Parallelize this bit
         for loc in locations:
             try:
@@ -86,13 +84,15 @@ class ImageRetriever:
         imgDir = os.path.join(self.targetDir, panID)
         headings = self.calculate_pano_headings(forwardHeading)
         cached = self.get_cached_image(panID, headings)
+        cached.set_coords(str(meta['location']['lat']) + ',' +
+                          str(meta['location']['lng']))
 
         return self.get_panorama(cached, urlParams, headings, panID, imgDir)
 
     def get_panorama(self, cached, params, headings, panID, imgDir):
         cachedFiles = cached.files
 
-         # TODO: Better error handling here
+        # TODO: Better error handling here
         for heading in headings:
             filename = str(heading) + '.jpg'
             if (filename not in cachedFiles):
@@ -100,25 +100,23 @@ class ImageRetriever:
                 url = self.API_URL + '?' + urllib.urlencode(params)
                 filename = os.path.join(imgDir, filename)
                 urllib.urlretrieve(url, filename)
-                cached.addImage(filename)
+                cached.add_image(filename)
 
         return cached
 
     def get_cached_image(self, panID, headings):
-        expectedNumImages = self.numImages()
         cachedPano = Panorama(panID, os.path.join(self.targetDir, panID))
-
-        cachedPano.clearCache(headings)
+        cachedPano.clear_cache(headings)
         return cachedPano
 
-    def numImages(self):
+    def num_images(self):
         if (360 % self.fov == 0):
             return 360/self.fov
         return math.ceil(360.0/self.fov)
 
     def calculate_pano_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
-        numIncrements = self.numImages()
+        numIncrements = self.num_images()
         increment = 360.0/numIncrements
 
         return [forwardHeading + (i * increment)
