@@ -6,10 +6,11 @@ from roads import BearingEstimator
 from adapter import GoogleAdapter, string_coords
 from exception import AddressNotFoundException
 
-class ImageRetriever:
+class PanoramaRetriever:
     # Specified by Google
     MAX_FOV = 120
     DEFAULT_FOV = 90
+    MIN_FOV = 10
 
     # Specified by Google; if the request specifies more it'll just go to this
     # silently
@@ -25,6 +26,11 @@ class ImageRetriever:
             raise ValueError('Requested field-of-view (FOV) cannot exceed '
                 + self.MAX_FOV + 'degrees. If the docs say it can be more than '
                 'this, please contact a maintainer so they can fix it.')
+        elif (fov > self.MIN_FOV):
+            raise ValueError('Requested field-of-view (FOV) cannot be less '
+                'than ' + self.MAX_FOV + 'degrees. If the docs say it can be '
+                'less more than this, please contact a maintainer so they can '
+                'fix it.')
         self.fov = fov
 
     def retrieve_images(self, locations = []):
@@ -66,7 +72,7 @@ class ImageRetriever:
                 filename = os.path.join(imgDir, filename)
                 self.adapter.street_view_image(panID, self.fov,
                                                self.size['x'], self.size['y'],
-                                               heading, filename)
+                                               heading, 0, filename)
                 cached.add_image(filename)
 
         return cached

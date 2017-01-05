@@ -35,10 +35,10 @@ class GoogleAdapter:
                                        ' with error "' +
                                        json['error']['message'] + '"')
 
-    def street_view_image(self, panID, fov, x, y, heading, filename):
+    def street_view_image(self, panID, fov, x, y, heading, pitch, filename):
         url = self.url('maps', 'maps/api/streetview',
                        {'pano': panID, 'fov': fov, 'heading': heading,
-                         'size': str(x) + 'x' + str(y)})
+                         'size': str(x) + 'x' + str(y)}, 'pitch': pitch)
         self.call_write_to_fs(url, filename)
 
     def street_view_image_meta(self, coords):
