@@ -1,7 +1,8 @@
 import urllib
 import json
 
-from exception import AddressNotFoundException, MetaDataRetrievalException
+from exception import AddressNotFoundException, MetaDataRetrievalException, \
+                      NearestRoadException
 
 class GoogleAdapter:
     def __init__(self, apiKey):
@@ -24,7 +25,15 @@ class GoogleAdapter:
                            if not isinstance(coords, basestring) else coords
         url = self.url('roads', 'v1/nearestRoads',
                        {'points': '|'.join(string_coord_set)})
-        return self.call_json(url)['snappedPoints']
+        json = self.call_json(url)
+
+        if 'snappedPoints' in json:
+            return json['snappedPoints']
+        elif 'error' in json:
+            raise NearestRoadException('Unable to retrieve nearest road to '
+                                       'points ' + str(string_coord_set) +
+                                       ' with error "' +
+                                       json['error']['message'] = '"')
 
     def street_view_image(self, panID, fov, x, y, heading, filename):
         url = self.url('maps', 'maps/api/streetview',

@@ -1,5 +1,8 @@
 class AddressNotFoundException(Exception):
-	pass
+    pass
 
 class MetaDataRetrievalException(Exception):
-	pass
+    pass
+
+class NearestRoadException(Exception):
+    pass
