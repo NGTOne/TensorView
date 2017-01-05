@@ -8,3 +8,6 @@
 *.shx
 *.dbf
 *.prj
+
+# Testing stuff (will go away eventually)
+model/*
