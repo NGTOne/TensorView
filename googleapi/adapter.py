@@ -21,7 +21,7 @@ class GoogleAdapter:
         urllib.urlretrieve(url, filename)
 
     def nearest_roads(self, coords):
-        stringCoordSet = [self.string_coords(coord) for coord in coords] \
+        stringCoordSet = [string_coords(coord) for coord in coords] \
                            if not isinstance(coords, basestring) else coords
         url = self.url('roads', 'v1/nearestRoads',
                        {'points': '|'.join(stringCoordSet)})
@@ -42,7 +42,7 @@ class GoogleAdapter:
         self.call_write_to_fs(url, filename)
 
     def street_view_image_meta(self, coords):
-        coords = self.string_coords(coords)
+        coords = string_coords(coords)
         url = self.url('maps', 'maps/api/streetview/metadata',
                        {'location': coords})
         response = urllib.urlopen(url)
@@ -57,6 +57,6 @@ class GoogleAdapter:
             raise MetaDataRetrievalException('An error occurred retrieving' +
                 'address metadata. The error was: ' + meta['status'])
 
-    def string_coords(self, coordPair):
-        return coordPair if isinstance(coordPair, basestring) \
-                      else ','.join(map(str, coordPair))
+def string_coords(self, coordPair):
+    return coordPair if isinstance(coordPair, basestring) \
+                     else ','.join(map(str, coordPair))

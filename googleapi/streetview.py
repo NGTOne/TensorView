@@ -3,7 +3,7 @@ import os
 
 from panorama import Panorama
 from roads import BearingEstimator
-from adapter import GoogleAdapter
+from adapter import GoogleAdapter, string_coords
 from exception import AddressNotFoundException
 
 class ImageRetriever:
@@ -91,6 +91,36 @@ class ImageRetriever:
 
     def get_forward_headings(self, locations):
         estimator = BearingEstimator(self.apiKey)
-        return [{'coords': loc['coords'],
-                 'forward_heading': estimator.check_bearing(loc['coords'])}
+        cachedHeadings = self.read_headings_file()
+        full = [{'coords': loc['coords'],
+                 'forward_heading':
+                  estimator.check_bearing(loc['coords'])
+                      if string_coords(loc['coords'])
+                      not in cachedHeadings else
+                      cachedHeadings[string_coords(loc['coords'])]}
                for loc in locations]
+        self.cache_headings(cachedHeadings, full)
+        return full
+
+    def headings_file(self):
+        return os.path.join(self.targetDir, 'headings.csv')
+
+    def cache_headings(self, cached, locations):
+        headingsFile = self.headings_file()
+        with open(headingsFile, 'a') as f:
+            for loc in locations:
+                stringCoords = string_coords(loc['coords'])
+                if stringCoords not in cached:
+                    f.write(stringCoords + ',' + str(loc['forward_heading']))
+
+    def read_headings_file(self):
+        headingsFile = self.headings_file()
+        if not os.path.isfile(headingsFile):
+            return {}
+
+        headings = {}
+        with open(headingsFile, 'r') as f:
+            for line in f:
+                line = f.readline().strip().split(',')
+                headings[line[0] + ',' + line[1]] = line[2]
+        return headings
