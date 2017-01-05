@@ -7,30 +7,18 @@ from adapter import GoogleAdapter, string_coords
 from exception import AddressNotFoundException
 
 class PanoramaRetriever:
-    # Specified by Google
-    MAX_FOV = 120
     DEFAULT_FOV = 90
-    MIN_FOV = 10
 
-    # Specified by Google; if the request specifies more it'll just go to this
-    # silently
-    MAX_SIZE = 640
+    # Non-premium users will be coerced to this anyways - premium users can
+    # have up to 2048x2048
+    DEFAULT_SIZE = 640
 
     def __init__(self, targetDir, apiKey, fov = DEFAULT_FOV,
-                 size = {'x': MAX_SIZE, 'y': MAX_SIZE}):
+                 size = {'x': DEFAULT_SIZE, 'y': DEFAULT_SIZE}):
         self.targetDir = targetDir
         self.adapter = GoogleAdapter(apiKey)
         self.apiKey = apiKey
         self.size = size
-        if (fov > self.MAX_FOV):
-            raise ValueError('Requested field-of-view (FOV) cannot exceed '
-                + self.MAX_FOV + 'degrees. If the docs say it can be more than '
-                'this, please contact a maintainer so they can fix it.')
-        elif (fov > self.MIN_FOV):
-            raise ValueError('Requested field-of-view (FOV) cannot be less '
-                'than ' + self.MAX_FOV + 'degrees. If the docs say it can be '
-                'less more than this, please contact a maintainer so they can '
-                'fix it.')
         self.fov = fov
 
     def retrieve_images(self, locations = []):
