@@ -15,7 +15,6 @@ class TFModel:
         graph = tf.GraphDef()
         graph.ParseFromString(modelF.read())
         tf.import_graph_def(graph, name = '')
-        self.session = tf.Session()
 
     def load_lookup(self, modelFile):
         splitPath = os.path.split(modelFile)
@@ -33,7 +32,7 @@ class TFModel:
             raise IOError('Image file does not exist!')
         img = tf.gfile.FastGFile(imgFilename, 'rb').read()
 
-        with self.session as sess:
+        with tf.Session() as sess:
             softmax = sess.graph.get_tensor_by_name('softmax:0')
             predictions = sess.run(softmax, {'DecodeJpeg/contents:0': img})
 
