@@ -21,19 +21,19 @@ class GoogleAdapter:
         urllib.urlretrieve(url, filename)
 
     def nearest_roads(self, coords):
-        string_coord_set = [self.string_coords(coord) for coord in coords] \
+        stringCoordSet = [self.string_coords(coord) for coord in coords] \
                            if not isinstance(coords, basestring) else coords
         url = self.url('roads', 'v1/nearestRoads',
-                       {'points': '|'.join(string_coord_set)})
+                       {'points': '|'.join(stringCoordSet)})
         json = self.call_json(url)
 
         if 'snappedPoints' in json:
             return json['snappedPoints']
         elif 'error' in json:
-            raise NearestRoadException('Unable to retrieve nearest road to '
-                                       'points ' + str(string_coord_set) +
+            raise NearestRoadException('Unable to retrieve nearest road to ' +
+                                       'points ' + str(stringCoordSet) +
                                        ' with error "' +
-                                       json['error']['message'] = '"')
+                                       json['error']['message'] + '"')
 
     def street_view_image(self, panID, fov, x, y, heading, filename):
         url = self.url('maps', 'maps/api/streetview',
