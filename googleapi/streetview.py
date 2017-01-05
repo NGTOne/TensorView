@@ -4,6 +4,7 @@ import os
 from panorama import Panorama
 from roads import BearingEstimator
 from adapter import GoogleAdapter
+from exception import AddressNotFoundException
 
 class ImageRetriever:
     # Specified by Google
