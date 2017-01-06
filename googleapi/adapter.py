@@ -48,7 +48,7 @@ class GoogleAdapter:
 
         url = self.url('maps', 'maps/api/streetview',
                        {'pano': panID, 'fov': fov, 'heading': heading,
-                         'size': str(x) + 'x' + str(y)}, 'pitch': pitch)
+                         'size': str(x) + 'x' + str(y), 'pitch': pitch})
         self.call_write_to_fs(url, filename)
 
     def street_view_image_meta(self, coords):

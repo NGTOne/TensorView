@@ -38,7 +38,7 @@ class Panorama:
     def slice_count(self):
         return len(self.slices)
 
-    def segment_count(self)
+    def segment_count(self):
         return len(self.segments)
 
     def headings(self):
