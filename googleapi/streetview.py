@@ -51,23 +51,23 @@ class PanoramaRetriever:
         return self.get_panorama(cached, headings, panID, imgDir)
 
     def get_panorama(self, cached, headings, panID, imgDir):
-        cachedFiles = cached.files
+        cachedSlices = cached.slices
 
         # TODO: Better error handling here
         for heading in headings:
             filename = str(heading) + '.jpg'
-            if (filename not in cachedFiles):
+            if (filename not in cachedSlices):
                 filename = os.path.join(imgDir, filename)
                 self.adapter.street_view_image(panID, self.fov,
                                                self.size['x'], self.size['y'],
                                                heading, 0, filename)
-                cached.add_image(filename)
+                cached.add_slice(filename)
 
         return cached
 
     def get_cached_image(self, panID, headings):
         cachedPano = Panorama(panID, os.path.join(self.targetDir, panID))
-        cachedPano.clear_cache(headings)
+        cachedPano.clean_up_slice_cache(headings)
         return cachedPano
 
     def num_images(self):

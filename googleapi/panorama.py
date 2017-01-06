@@ -12,9 +12,9 @@ class Panorama:
             except OSError:
                 raise OSError('Could not create directory for panorama images.')
 
-        self.files = self.find_files()
+        self.slices = self.find_cached_slices()
 
-    def find_files(self):
+    def find_cached_slices(self):
         return [f for f in os.listdir(self.imgDir)
                 if (os.path.isfile(os.path.join(self.imgDir, f))
                     and re.match('^-?\d+\.\d+\.jpg$', f, re.IGNORECASE))]
@@ -23,27 +23,27 @@ class Panorama:
     def set_coords(self, coords):
         self.coords = coords
 
-    def add_image(self, filename):
-        self.files.append(filename)
+    def add_slice(self, filename):
+        self.slices.append(filename)
 
-    def file_count(self):
-        return len(self.files)
+    def slice_count(self):
+        return len(self.slices)
 
     def headings(self):
-        return [image.replace('.jpg', '') for image in self.files]
+        return [image.replace('.jpg', '') for image in self.slices]
 
-    def full_filenames(self):
-        return [os.path.join(self.imgDir, image) for image in self.files]
+    def full_slice_names(self):
+        return [os.path.join(self.imgDir, image) for image in self.slices]
 
-    def clear_cache(self, headings):
+    def clean_up_slice_cache(self, headings):
         # We don't want to delete the directory because we'll likely be writing
         # to it again soon anyways
         safeImages = []
         if (len(headings) == self.file_count()):
            images = [str(heading) + '.jpg' for heading in headings]
-           safeImages = [image for image in images if image in self.files]
+           safeImages = [image for image in images if image in self.slices]
 
-        for f in self.files:
+        for f in self.slices:
             if f not in safeImages:
                 os.remove(os.path.join(self.imgDir, f))
-        self.files = [f for f in self.files if f in safeImages]
+        self.slices = [f for f in self.slices if f in safeImages]
