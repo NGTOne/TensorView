@@ -4,7 +4,7 @@ import tensorflow as tf
 import numpy as np
 import os
 
-class TFModel:
+class TFModel(object):
     def __init__(self, modelFile):
         # These are potentially expensive, and we only need to do them once
         self.load_model(modelFile)
@@ -12,7 +12,7 @@ class TFModel:
     def load_model(self, modelFile):
         modelF = tf.gfile.FastGFile(modelFile, 'rb')
         self.graph = tf.GraphDef()
-        graph.ParseFromString(modelF.read())
+        self.graph.ParseFromString(modelF.read())
 
     def session(self):
         tf.import_graph_def(self.graph, name = '')
@@ -20,8 +20,8 @@ class TFModel:
 
 class TFImageRecognizer(TFModel):
     def __init__(self, modelFile):
-        self.load_lookup(modelFile)
         super(TFImageRecognizer, self).__init__(modelFile)
+        self.load_lookup(modelFile)
 
     def load_lookup(self, modelFile):
         splitPath = os.path.split(modelFile)
@@ -36,7 +36,7 @@ class TFImageRecognizer(TFModel):
 
     def top_n(self, imgFilename, n):
         if not tf.gfile.Exists(imgFilename):
-            raise IOError('Image file does not exist!')
+            raise IOError('Image file ' + imgFilename + ' does not exist!')
         img = tf.gfile.FastGFile(imgFilename, 'rb').read()
 
         with self.session() as sess:
