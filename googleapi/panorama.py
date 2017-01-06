@@ -6,13 +6,19 @@ class Panorama:
         self.panID = panID
         self.imgDir = imgDir
 
-        if (not os.path.isdir(imgDir)):
-            try:
-                os.makedirs(imgDir)
-            except OSError:
-                raise OSError('Could not create directory for panorama images.')
+        self.create_dir(imgDir, 'Could not create directory for panorama '
+                        'images.')
+        self.create_dir(os.path.join(imgDir, 'segments'), 'Could not create '
+                        'directory for segmented panoramas.')
 
         self.slices, self.segments = self.read_cache()
+
+    def create_dir(self, dirname, error):
+        if (not os.path.isdir(dirname)):
+            try:
+                os.makedirs(dirname)
+            except OSError:
+                raise OSError(error)
 
     def read_cache(self):
         slices = [f for f in os.listdir(self.imgDir)
