@@ -67,6 +67,6 @@ class GoogleAdapter:
             raise MetaDataRetrievalException('An error occurred retrieving' +
                 'address metadata. The error was: ' + meta['status'])
 
-def string_coords(self, coordPair):
+def string_coords(coordPair):
     return coordPair if isinstance(coordPair, basestring) \
                      else ','.join(map(str, coordPair))
