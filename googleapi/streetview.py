@@ -116,6 +116,6 @@ class PanoramaRetriever:
         headings = {}
         with open(headingsFile, 'r') as f:
             for line in f:
-                line = f.readline().strip().split(',')
-                headings[line[0] + ',' + line[1]] = line[2]
+                line = line.strip().split(',')
+                headings[line[0] + ',' + line[1]] = float(line[2])
         return headings
