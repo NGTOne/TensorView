@@ -2,12 +2,17 @@
 *.pyc
 *.jpg
 *.jpeg
+*.csv
 
 # Shapefile stuff
 *.shp
 *.shx
 *.dbf
 *.prj
+*.cpg
+*.sbn
+*.sbx
+*.shp.xml
 
 # Testing stuff (will go away eventually)
 model/*
