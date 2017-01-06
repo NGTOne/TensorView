@@ -35,9 +35,10 @@ class GoogleAdapter:
                                        ' with error "' +
                                        json['error']['message'] + '"')
 
-        # Specified by Google
-        MIN_STREET_VIEW_FOV = 10
-        MAX_STREET_VIEW_FOV = 120
+    # Specified by Google
+    MIN_STREET_VIEW_FOV = 10
+    MAX_STREET_VIEW_FOV = 120
+
     def street_view_image(self, panID, fov, x, y, heading, pitch, filename):
         if (fov < self.MIN_STREET_VIEW_FOV):
             raise ValueError('Field of view (FOV) cannot be less than ' +

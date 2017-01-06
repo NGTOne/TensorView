@@ -105,7 +105,8 @@ class PanoramaRetriever:
             for loc in locations:
                 stringCoords = string_coords(loc['coords'])
                 if stringCoords not in cached:
-                    f.write(stringCoords + ',' + str(loc['forward_heading']))
+                    f.write(stringCoords + ',' + str(loc['forward_heading'])
+                            + '\n')
 
     def read_headings_file(self):
         headingsFile = self.headings_file()

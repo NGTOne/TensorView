@@ -69,7 +69,7 @@ class Panorama:
         # We don't want to delete the directory because we'll likely be writing
         # to it again soon anyways
         safeImages = []
-        if (len(headings) == self.file_count()):
+        if (len(headings) == self.slice_count()):
            images = [str(heading) + '.jpg' for heading in headings]
            safeImages = [image for image in images if image in self.slices]
 
