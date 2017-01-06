@@ -8,13 +8,20 @@ class TFModel:
     def __init__(self, modelFile):
         # These are potentially expensive, and we only need to do them once
         self.load_model(modelFile)
-        self.load_lookup(modelFile)
 
     def load_model(self, modelFile):
         modelF = tf.gfile.FastGFile(modelFile, 'rb')
-        graph = tf.GraphDef()
+        self.graph = tf.GraphDef()
         graph.ParseFromString(modelF.read())
-        tf.import_graph_def(graph, name = '')
+
+    def session(self):
+        tf.import_graph_def(self.graph, name = '')
+        return tf.Session()
+
+class TFImageRecognizer(TFModel):
+    def __init__(self, modelFile):
+        self.load_lookup(modelFile)
+        super(TFImageRecognizer, self).__init__(modelFile)
 
     def load_lookup(self, modelFile):
         splitPath = os.path.split(modelFile)
@@ -32,7 +39,7 @@ class TFModel:
             raise IOError('Image file does not exist!')
         img = tf.gfile.FastGFile(imgFilename, 'rb').read()
 
-        with tf.Session() as sess:
+        with self.session() as sess:
             softmax = sess.graph.get_tensor_by_name('softmax:0')
             predictions = sess.run(softmax, {'DecodeJpeg/contents:0': img})
 

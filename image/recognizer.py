@@ -1,14 +1,14 @@
 # This one's just meant to act as a wrapper around TensorFlow and any other
 # image-recognition stuff, so it's pretty minimal
 
-from tf import TFModel
+from tf import TFImageRecognizer
 
 class ImageRecognizer:
     DEFAULT_TOP_N = 5 # Cribbed from the TensorFlow image-recognition example
 
     def __init__(self, interestingCategories, modelFile, threshold, topN = 5):
         self.interestingCategories = interestingCategories
-        self.model = TFModel(modelFile)
+        self.model = TFImageRecognizer(modelFile)
         self.threshold = threshold
         self.topN = topN
 
