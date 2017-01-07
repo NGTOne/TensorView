@@ -23,23 +23,33 @@ class PanoramaRetriever:
 
     def retrieve_images(self, locations = []):
         images = []
-        locations = self.get_forward_headings(locations)
+        locations = self.get_metadata_and_deduplicate(locations)
 
         # TODO: Parallelize this bit
-        panIDs = []
         for loc in locations:
-            try:
-                # Image meta is a free call (no quotas)
-                meta = self.image_meta(loc['coords'])
-                panID = meta['pano_id']
-                if (panID not in panIDs):
-                    images.append(self.get_image(meta, loc['forward_heading']))
-                    panIDs.append(panID)
-            except AddressNotFoundException:
-                # Nothing here, let's move on to the next one
-                continue
+            images.append(self.get_image(loc['meta'],
+                                         loc['forward_heading']))
 
         return images
+
+    def get_metadata_and_deduplicate(self, locations):
+        # Image meta is a free call and not subject to quotas or throttling
+        metaLocations = []
+        for loc in locations:
+            try:
+                metaLocations.append({'coords': loc['coords'],
+                                      'meta': self.image_meta(loc['coords'])})
+            except AddressNotFoundException:
+                continue # Nothing to do here, carry on
+
+        # Filter out duplicates
+        panIDs = set()
+        locations = [loc for loc in metaLocations if loc['meta']['pano_id']
+                         not in panIDs and (panIDs.add(loc['meta']['pano_id'])
+                                            or True)]
+
+        # Forward headings isn't free, so we deduplicate first
+        return self.get_forward_headings(locations)
 
     def image_meta(self, coords):
         return self.adapter.street_view_image_meta(coords)
@@ -91,7 +101,7 @@ class PanoramaRetriever:
     def get_forward_headings(self, locations):
         estimator = BearingEstimator(self.apiKey)
         cachedHeadings = self.read_headings_file()
-        full = [{'coords': loc['coords'],
+        full = [{'coords': loc['coords'], 'meta': loc['meta'],
                  'forward_heading':
                   estimator.check_bearing(loc['coords'])
                       if string_coords(loc['coords'])
