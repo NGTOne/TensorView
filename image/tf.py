@@ -11,12 +11,13 @@ class TFModel(object):
 
     def load_model(self, modelFile):
         modelF = tf.gfile.FastGFile(modelFile, 'rb')
-        self.graph = tf.GraphDef()
-        self.graph.ParseFromString(modelF.read())
+        gDef = tf.GraphDef()
+        gDef.ParseFromString(modelF.read())
+        tf.import_graph_def(gDef, name = '')
+        self.graph = tf.get_default_graph()
 
     def session(self):
-        tf.import_graph_def(self.graph, name = '')
-        return tf.Session()
+        return tf.Session(graph = self.graph)
 
 class TFImageRecognizer(TFModel):
     def __init__(self, modelFile):
