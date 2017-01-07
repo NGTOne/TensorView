@@ -26,10 +26,15 @@ class PanoramaRetriever:
         locations = self.get_forward_headings(locations)
 
         # TODO: Parallelize this bit
+        panIDs = []
         for loc in locations:
             try:
-                meta = self.image_meta(loc['coords']);
-                images.append(self.get_image(meta, loc['forward_heading']))
+                # Image meta is a free call (no quotas)
+                meta = self.image_meta(loc['coords'])
+                panID = meta['pano_id']
+                if (panID not in panIDs):
+                    images.append(self.get_image(meta, loc['forward_heading']))
+                    panIDs.append(panID)
             except AddressNotFoundException:
                 # Nothing here, let's move on to the next one
                 continue
@@ -57,10 +62,10 @@ class PanoramaRetriever:
         for heading in headings:
             filename = str(heading) + '.jpg'
             if (filename not in cachedSlices):
-                filename = os.path.join(imgDir, filename)
+                fullFilename = os.path.join(imgDir, filename)
                 self.adapter.street_view_image(panID, self.fov,
                                                self.size['x'], self.size['y'],
-                                               heading, 0, filename)
+                                               heading, 0, fullFilename)
                 cached.add_slice(filename)
 
         return cached
