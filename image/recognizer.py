@@ -13,7 +13,7 @@ class ImageRecognizer:
         self.topN = topN
 
     def find_interesting_panoramas(self, panos):
-        interesting = [(pano.coords, self.find_interesting_headings(pano))
+        interesting = [(pano, self.find_interesting_headings(pano))
                           for pano in panos]
         return [coords for coords in interesting if coords[1] is not None]
 
