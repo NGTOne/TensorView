@@ -103,10 +103,10 @@ class PanoramaRetriever:
         cachedHeadings = self.read_headings_file()
         full = [{'coords': loc['coords'], 'meta': loc['meta'],
                  'forward_heading':
-                  estimator.check_bearing(loc['coords'])
+                  (estimator.check_bearing(loc['coords'])
                       if string_coords(loc['coords'])
                       not in cachedHeadings else
-                      cachedHeadings[string_coords(loc['coords'])]}
+                      cachedHeadings[string_coords(loc['coords'])]) % 360}
                for loc in locations]
         self.cache_headings(cachedHeadings, full)
         return full
