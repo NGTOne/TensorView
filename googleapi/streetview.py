@@ -95,7 +95,7 @@ class PanoramaRetriever:
         numIncrements = self.num_images()
         increment = 360.0/numIncrements
 
-        return [forwardHeading + (i * increment)
+        return [(forwardHeading + (i * increment)) % 360
                     for i in range(0, numIncrements)]
 
     def get_forward_headings(self, locations):
