@@ -33,7 +33,7 @@ class PanoramaRetriever:
         return images
 
     def get_metadata_and_deduplicate(self, locations):
-        # Image meta is a free call and not subject to quotas or throttling
+        # We can use Street View metadata to deduplicate locations
         metaLocations = []
         for loc in locations:
             try:
