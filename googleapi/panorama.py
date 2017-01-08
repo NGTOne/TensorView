@@ -77,3 +77,7 @@ class Panorama:
             if f not in safeImages:
                 os.remove(os.path.join(self.imgDir, f))
         self.slices = [f for f in self.slices if f in safeImages]
+
+    def __repr__(self):
+        return 'PanID: ' + self.panID + ', coords: ' + self.coords + \
+               ', slices: ' + str(self.slices)
