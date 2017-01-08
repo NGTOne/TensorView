@@ -19,8 +19,12 @@ class ImageRecognizer:
 
     def find_interesting_headings(self, pano):
         headings = zip(pano.headings(), pano.full_slice_names())
-        return [heading[0] for heading in headings
-                   if self.is_image_interesting(heading[1])] or None
+        interesting = []
+        for heading in headings:
+            isItInteresting = self.is_image_interesting(heading[1])
+            if (isItInteresting):
+                interesting.append((heading[0], isItInteresting))
+        return interesting or None
 
     def is_image_interesting(self, filename):
         bestGuesses = self.model.top_n(filename, self.topN)
@@ -28,5 +32,5 @@ class ImageRecognizer:
             intersect = [cat for cat in self.interestingCategories
                             if cat in guess[0]]
             if (intersect and guess[1] >= self.threshold):
-                return True
+                return (intersect, guess[1])
         return False
