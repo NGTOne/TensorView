@@ -31,7 +31,7 @@ class ImageRecognizer:
         bestGuesses = self.model.top_n(filename, self.topN)
         for guess in bestGuesses:
             intersect = [cat for cat in self.interestingCategories
-                            if cat in guess[0]]
+                            if cat == guess[0]]
             if (intersect and guess[1] >= self.threshold):
                 return (intersect, guess[1])
         return False

@@ -24,7 +24,7 @@ class TFImageRecognizer(TFModel):
 
     def load_lookup(self, labelFile):
         with open(labelFile, 'r') as f:
-            self.lookup = f.readlines()
+            self.lookup = [line.rstrip('\n') for line in f]
 
     def top_n(self, imgFilename, n):
         if not tf.gfile.Exists(imgFilename):
