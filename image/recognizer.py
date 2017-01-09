@@ -6,9 +6,10 @@ from tf import TFImageRecognizer
 class ImageRecognizer:
     DEFAULT_TOP_N = 5 # Cribbed from the TensorFlow image-recognition example
 
-    def __init__(self, interestingCategories, modelFile, threshold, topN = 5):
+    def __init__(self, interestingCategories, modelFile, labelFile, threshold,
+                 topN = 5):
         self.interestingCategories = interestingCategories
-        self.model = TFImageRecognizer(modelFile)
+        self.model = TFImageRecognizer(modelFile, labelFile)
         self.threshold = threshold
         self.topN = topN
 
