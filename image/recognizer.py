@@ -2,16 +2,26 @@
 # image-recognition stuff, so it's pretty minimal
 
 from tf import TFImageRecognizer
+from exception import InvalidCategoryError
 
 class ImageRecognizer:
     DEFAULT_TOP_N = 5 # Cribbed from the TensorFlow image-recognition example
 
     def __init__(self, interestingCategories, modelFile, labelFile, threshold,
                  topN = 5):
-        self.interestingCategories = interestingCategories
         self.model = TFImageRecognizer(modelFile, labelFile)
+        self.interestingCategories = interestingCategories
         self.threshold = threshold
         self.topN = topN
+
+        invalidCategories = [cat for cat in interestingCategories
+                                 if cat not in self.model.lookup]
+        if invalidCategories:
+            raise InvalidCategoryError('Categories ' + str(invalidCategories) +
+                                       ' do not exist in the model! If '
+                                       'somebody else provided you with this '
+                                       'model, have them provide you with a '
+                                       'list of the categories they used.')
 
     def find_interesting_panoramas(self, panos):
         interesting = [(pano, self.find_interesting_headings(pano))
