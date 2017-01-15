@@ -111,6 +111,9 @@ class PanoramaRetriever:
         self.cache_headings(cachedHeadings, full)
         return full
 
+    def id_file(self):
+        return os.path.join(self.targetDir, 'points.csv')
+
     def headings_file(self):
         return os.path.join(self.targetDir, 'headings.csv')
 
@@ -122,6 +125,23 @@ class PanoramaRetriever:
                 if stringCoords not in cached:
                     f.write(stringCoords + ',' + str(loc['forward_heading'])
                             + '\n')
+
+    # TODO: Refactor these
+    def read_id_file(self):
+        idFile = self.points_file()
+        if not os.path.isfile(idFile):
+            return {}
+
+        cachedPoints = {}
+        with open(idFile, 'r') as f:
+            for line in f:
+                line = line.strip().split(',')
+                # We store the true location of each pano, as it is often
+                # different from the co-ordinates we ask for
+                cachedPoints[line[0] + ',' + line[1]] =
+                    {'pano_id': line[2], 'location': {'lat': line[3],
+                                                      'lng': line[4]}}
+        return cachedPoints
 
     def read_headings_file(self):
         headingsFile = self.headings_file()
