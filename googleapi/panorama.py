@@ -68,15 +68,15 @@ class Panorama:
     def clean_up_slice_cache(self, headings):
         # We don't want to delete the directory because we'll likely be writing
         # to it again soon anyways
-        safeImages = []
-        if (len(headings) == self.slice_count()):
-           images = [str(heading) + '.jpg' for heading in headings]
-           safeImages = [image for image in images if image in self.slices]
+        images = [str(heading) + '.jpg' for heading in headings]
+        safeImages = [image for image in images if image in self.slices]
 
+        # TODO: Make caching smarter (only delete images if there's a direct
+        # conflict)
         for f in self.slices:
             if f not in safeImages:
                 os.remove(os.path.join(self.imgDir, f))
-        self.slices = [f for f in self.slices if f in safeImages]
+        self.slices = safeImages
 
     def __repr__(self):
         return 'PanID: ' + self.panID + ', coords: ' + self.coords + \

@@ -13,13 +13,14 @@ class PanoramaRetriever:
     # have up to 2048x2048
     DEFAULT_SIZE = 640
 
-    def __init__(self, targetDir, apiKey, fov = DEFAULT_FOV,
-                 size = {'x': DEFAULT_SIZE, 'y': DEFAULT_SIZE}):
+    def __init__(self, targetDir, apiKey, **kwargs):
         self.targetDir = targetDir
         self.adapter = GoogleAdapter(apiKey)
         self.apiKey = apiKey
-        self.size = size
-        self.fov = fov
+        self.size = kwargs.get('size', {'x': self.DEFAULT_SIZE,
+                                        'y': self.DEFAULT_SIZE})
+        self.fov = kwargs.get('fov', self.DEFAULT_FOV)
+        self.useOblique = kwargs.get('oblique', False)
 
     def retrieve_images(self, locations = []):
         images = []
@@ -92,11 +93,14 @@ class PanoramaRetriever:
 
     def calculate_pano_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
-        numIncrements = self.num_images()
-        increment = 360.0/numIncrements
+        if self.useOblique:
+            numIncrements = self.num_images()
+            increment = 360.0/numIncrements
 
-        return [(forwardHeading + (i * increment)) % 360
-                    for i in range(0, numIncrements)]
+            return [(forwardHeading + (i * increment)) % 360
+                        for i in range(0, numIncrements)]
+
+        return [forwardHeading + 90.0 % 360, forwardHeading - 90 % 360]
 
     def get_forward_headings(self, locations):
         estimator = BearingEstimator(self.apiKey)
