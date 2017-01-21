@@ -100,7 +100,7 @@ class PanoramaRetriever:
             return [(forwardHeading + (i * increment)) % 360
                         for i in range(0, numIncrements)]
 
-        return [forwardHeading + 90.0 % 360, forwardHeading - 90 % 360]
+        return [(forwardHeading + 90.0) % 360, (forwardHeading - 90.0) % 360]
 
     def get_forward_headings(self, locations):
         estimator = BearingEstimator(self.apiKey)
