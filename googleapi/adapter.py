@@ -66,7 +66,7 @@ class GoogleAdapter:
             raise AddressNotFoundException('No imagery available for ' +
                 coords)
         else:
-            raise MetaDataRetrievalException('An error occurred retrieving' +
+            raise MetaDataRetrievalException('An error occurred retrieving ' +
                 'address metadata. The error was: ' + meta['status'])
 
 def string_coords(coordPair):
