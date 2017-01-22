@@ -61,7 +61,8 @@ class GoogleAdapter:
 
         if (meta['status'] == 'OK'):
             return meta
-        elif (meta['status'] == 'ZERO' or meta['status'] == 'NOT_FOUND'):
+        elif (meta['status'] == 'ZERO_RESULTS'
+              or meta['status'] == 'NOT_FOUND'):
             raise AddressNotFoundException('No imagery available for ' +
                 coords)
         else:
