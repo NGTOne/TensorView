@@ -57,6 +57,7 @@ class PanoramaRetriever:
         return self.get_forward_headings(locations)
 
     def image_meta(self, coords, cached):
+        coords = string_coords(coords)
         if coords not in cached:
             meta = self.adapter.street_view_image_meta(coords)
             self.cache_meta(coords, meta)
@@ -136,8 +137,8 @@ class PanoramaRetriever:
         with open(metaFile, 'a') as f:
             if 'pano_id' in meta:
                 f.write(string_coords(coords) + ',' + meta['pano_id'] + ',' +
-                    meta['location']['lat'] + ',' + meta['location']['lng']
-                    + '\n')
+                    str(meta['location']['lat']) + ',' +
+                    str(meta['location']['lng']) + '\n')
             else:
                 f.write(string_coords(coords) + ',NOT_FOUND')
 
@@ -152,7 +153,7 @@ class PanoramaRetriever:
 
     # TODO: Refactor these
     def read_id_file(self):
-        idFile = self.points_file()
+        idFile = self.id_file()
         if not os.path.isfile(idFile):
             return {}
 
