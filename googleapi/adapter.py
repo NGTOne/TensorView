@@ -61,11 +61,12 @@ class GoogleAdapter:
 
         if (meta['status'] == 'OK'):
             return meta
-        elif (meta['status'] == 'ZERO' or meta['status'] == 'NOT_FOUND'):
+        elif (meta['status'] == 'ZERO_RESULTS'
+              or meta['status'] == 'NOT_FOUND'):
             raise AddressNotFoundException('No imagery available for ' +
                 coords)
         else:
-            raise MetaDataRetrievalException('An error occurred retrieving' +
+            raise MetaDataRetrievalException('An error occurred retrieving ' +
                 'address metadata. The error was: ' + meta['status'])
 
 def string_coords(coordPair):
