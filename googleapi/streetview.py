@@ -33,12 +33,16 @@ class PanoramaRetriever:
         return images
 
     def get_metadata_and_deduplicate(self, locations):
-        # We can use Street View metadata to deduplicate locations
+        # We can use Street View metadata to deduplicate location
+        # TODO: Clean up this dog's breakfast
+        cachedMeta = self.read_id_file()
+
         metaLocations = []
         for loc in locations:
             try:
                 metaLocations.append({'coords': loc['coords'],
-                                      'meta': self.image_meta(loc['coords'])})
+                                      'meta': self.image_meta(loc['coords'],
+                                                              cachedMeta)})
             except AddressNotFoundException:
                 continue # Nothing to do here, carry on
 
@@ -51,8 +55,14 @@ class PanoramaRetriever:
         # Forward headings isn't free, so we deduplicate first
         return self.get_forward_headings(locations)
 
-    def image_meta(self, coords):
-        return self.adapter.street_view_image_meta(coords)
+    def image_meta(self, coords, cached):
+        if coords not in cached:
+            meta = self.adapter.street_view_image_meta(coords)
+            self.cache_meta(coords, meta)
+            return meta
+        if cached[coords] == 'NOT_FOUND':
+            raise AddressNotFoundException()
+        return cached[coords]
 
     def get_image(self, meta, forwardHeading):
         panID = meta['pano_id']
@@ -117,6 +127,16 @@ class PanoramaRetriever:
     def headings_file(self):
         return os.path.join(self.targetDir, 'headings.csv')
 
+    def cache_meta(self, coords, meta):
+        metaFile = self.id_file()
+        with open(metaFile, 'a') as f:
+            if 'pano_id' in meta:
+                f.write(string_coords(coords) + ',' + meta['pano_id'] + ',' +
+                    meta['location']['lat'] + ',' + meta['location']['lng']
+                    + '\n')
+            else:
+                f.write(string_coords(coords) + ',NOT_FOUND')
+
     def cache_headings(self, cached, locations):
         headingsFile = self.headings_file()
         with open(headingsFile, 'a') as f:
@@ -138,9 +158,10 @@ class PanoramaRetriever:
                 line = line.strip().split(',')
                 # We store the true location of each pano, as it is often
                 # different from the co-ordinates we ask for
-                cachedPoints[line[0] + ',' + line[1]] =
-                    {'pano_id': line[2], 'location': {'lat': line[3],
-                                                      'lng': line[4]}}
+                cachedPoints[line[0] + ',' + line[1]] = \
+                    {'pano_id': line[2],
+                     'location': {'lat': line[3], 'lng': line[4]}} \
+                if line[2] != 'NOT_FOUND' else line[2]
         return cachedPoints
 
     def read_headings_file(self):
