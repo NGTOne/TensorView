@@ -4,7 +4,7 @@ import os
 from panorama import Panorama
 from roads import BearingEstimator
 from adapter import GoogleAdapter, string_coords
-from exception import AddressNotFoundException
+from exception import NearestRoadException, AddressNotFoundException
 
 class PanoramaRetriever:
     DEFAULT_FOV = 90
@@ -116,13 +116,19 @@ class PanoramaRetriever:
     def get_forward_headings(self, locations):
         estimator = BearingEstimator(self.apiKey)
         cachedHeadings = self.read_headings_file()
-        full = [{'coords': loc['coords'], 'meta': loc['meta'],
-                 'forward_heading':
-                  (estimator.check_bearing(loc['coords'])
-                      if string_coords(loc['coords'])
-                      not in cachedHeadings else
-                      cachedHeadings[string_coords(loc['coords'])]) % 360}
-               for loc in locations]
+        try:
+            full = []
+            for loc in locations:
+                full.append({'coords': loc['coords'], 'meta': loc['meta'],
+                             'forward_heading':
+                             (estimator.check_bearing(loc['coords'])
+                             if string_coords(loc['coords'])
+                             not in cachedHeadings else
+                             cachedHeadings[string_coords(loc['coords'])])
+                                 % 360})
+        except NearestRoadException:
+            self.cache_headings(cachedHeadings, full)
+            raise
         self.cache_headings(cachedHeadings, full)
         return full
 
