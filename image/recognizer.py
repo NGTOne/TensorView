@@ -2,17 +2,24 @@
 # image-recognition stuff, so it's pretty minimal
 
 from tf import TFImageRecognizer
-from exception import InvalidCategoryError
+from exception import InvalidCategoryError, InvalidModeError
 
 class ImageRecognizer:
     DEFAULT_TOP_N = 5 # Cribbed from the TensorFlow image-recognition example
+    MODES = ['individual', 'summing']
 
     def __init__(self, interestingCategories, modelFile, labelFile, threshold,
-                 topN = 5):
+                 **kwargs):
         self.model = TFImageRecognizer(modelFile, labelFile)
         self.interestingCategories = interestingCategories
         self.threshold = threshold
-        self.topN = topN
+        self.topN = kwargs.get('topN', self.DEFAULT_TOP_N)
+
+        mode = kwargs.get('mode', 'individual')
+        if mode not in self.MODES:
+            raise InvalidModeError('Invalid thresholding mode. Valid modes are '
+                                   + str(self.MODES))
+        self.mode = mode
 
         invalidCategories = [cat for cat in interestingCategories
                                  if cat not in self.model.lookup]
@@ -39,9 +46,18 @@ class ImageRecognizer:
 
     def is_image_interesting(self, filename):
         bestGuesses = self.model.top_n(filename, self.topN)
-        for guess in bestGuesses:
-            intersect = [cat for cat in self.interestingCategories
-                            if cat == guess[0]]
-            if (intersect and guess[1] >= self.threshold):
-                return (intersect, guess[1])
+        certainty = self.calculate_certainty(bestGuesses)
+        if (certainty >= self.threshold):
+            intersect = [guess for guess in bestGuesses
+                         if guess[0] in self.interestingCategories]
+            return (intersect, certainty)
         return False
+
+    def calculate_certainty(self, bestGuesses):
+        # TODO: Refactor this
+        certainties = [guess[1] for guess in bestGuesses
+                       if guess[0] in self.interestingCategories]
+        if (self.mode == 'individual'):
+            return max(certainties) if certainties else 0
+        elif (self.mode == 'summing'):
+            return sum(certainties) if certainties else 0
