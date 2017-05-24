@@ -105,12 +105,17 @@ class PanoramaRetriever:
     def calculate_pano_headings(self, forwardHeading):
         # The Street View API views heading as 0 = due north = 360
         if self.useOblique:
+            # In this case, we're assuming that the user is interested in a
+            # set of evenly spaced images at some angular offset from the
+            # direction of the road
             numIncrements = self.num_images()
             increment = 360.0/numIncrements
 
             return [(forwardHeading + (i * increment)) % 360
                         for i in range(0, numIncrements)]
 
+        # If we're not interested in images that are non-orthogonal to the
+        # direction of the road, we'll just return +-90 and be done with it
         return [(forwardHeading + 90.0) % 360, (forwardHeading - 90.0) % 360]
 
     def get_forward_headings(self, locations):
@@ -138,14 +143,18 @@ class PanoramaRetriever:
     def headings_file(self):
         return os.path.join(self.targetDir, 'headings.csv')
 
+    # TODO: This thing is a goddamn dog's breakfast; refactor it
     def cache_meta(self, coords, meta):
         metaFile = self.id_file()
         with open(metaFile, 'a') as f:
             if 'pano_id' in meta:
+                # These co-ordinates yielded a panorama
                 f.write(string_coords(coords) + ',' + meta['pano_id'] + ',' +
                     str(meta['location']['lat']) + ',' +
                     str(meta['location']['lng']) + '\n')
             else:
+                # These co-ordinates didn't actually yield a panorama
+                # This is still a valid scenario that we want to cache
                 f.write(string_coords(coords) + ',NOT_FOUND')
 
     def cache_headings(self, cached, locations):
