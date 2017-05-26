@@ -17,3 +17,7 @@
 # Testing stuff (will go away eventually)
 model/*
 training/*
+
+# Graph and label files
+*.pb
+*.txt
