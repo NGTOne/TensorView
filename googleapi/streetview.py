@@ -35,17 +35,20 @@ class PanoramaRetriever:
 
     def get_metadata_and_deduplicate(self, locations):
         # We can use Street View metadata to deduplicate location
-        # TODO: Clean up this dog's breakfast
         cachedMeta = self.read_id_file()
+        metaToCache = []
 
         metaLocations = []
         for loc in locations:
             try:
-                metaLocations.append({'coords': loc['coords'],
-                                      'meta': self.image_meta(loc['coords'],
-                                                              cachedMeta)})
+                result = {'coords': loc['coords'],
+                          'meta': self.image_meta(loc['coords'], cachedMeta)}
+                metaLocations.append(result)
+                metaToCache.append(result)
             except AddressNotFoundException:
-                continue # Nothing to do here, carry on
+                metaToCache.append({'coords': loc['coords'], meta: 'NOT_FOUND'})
+
+        self.cache_meta(cachedMeta, metaToCache)
 
         # Filter out duplicates
         panIDs = set()
@@ -59,9 +62,7 @@ class PanoramaRetriever:
     def image_meta(self, coords, cached):
         coords = string_coords(coords)
         if coords not in cached:
-            meta = self.adapter.street_view_image_meta(coords)
-            self.cache_meta(coords, meta)
-            return meta
+            return self.adapter.street_view_image_meta(coords)
         if cached[coords] == 'NOT_FOUND':
             raise AddressNotFoundException()
         return cached[coords]
@@ -143,19 +144,20 @@ class PanoramaRetriever:
     def headings_file(self):
         return os.path.join(self.targetDir, 'headings.csv')
 
-    # TODO: This thing is a goddamn dog's breakfast; refactor it
-    def cache_meta(self, coords, meta):
+    # TODO: Refactor these
+    def cache_meta(self, cached, meta):
         metaFile = self.id_file()
         with open(metaFile, 'a') as f:
-            if 'pano_id' in meta:
-                # These co-ordinates yielded a panorama
-                f.write(string_coords(coords) + ',' + meta['pano_id'] + ',' +
-                    str(meta['location']['lat']) + ',' +
-                    str(meta['location']['lng']) + '\n')
-            else:
-                # These co-ordinates didn't actually yield a panorama
-                # This is still a valid scenario that we want to cache
-                f.write(string_coords(coords) + ',NOT_FOUND')
+            for loc in meta:
+                stringCoords = string_coords(loc['coords'])
+                if stringCoords not in cached:
+                    f.write(stringCoords + ',')
+                    if loc['meta'] == 'NOT_FOUND':
+                        f.write(loc['meta'])
+                    else:
+                        f.write(str(loc['meta']['location']['lat']) + ',' +
+                                str(loc['meta']['location']['lng']))
+                    f.write('\n')
 
     def cache_headings(self, cached, locations):
         headingsFile = self.headings_file()
